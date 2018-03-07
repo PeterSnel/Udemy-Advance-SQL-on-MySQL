@@ -1,4 +1,4 @@
--- S03-P01
+-- ### S03-P01 ###
 CREATE INDEX idx_personal_code_2chars ON sample_staff.employee (personal_code(2));
 
 EXPLAIN SELECT employee.first_name, employee.last_name, employee.personal_code 
@@ -29,3 +29,30 @@ WHERE 1=1
 GROUP BY
 	`index_name`
 ;
+
+
+
+-- ### S03-P02 ###
+/* These queries run longer than 100ms. 
+	How would you make them run in less than 10ms? */
+
+SELECT `contract`.`archive_code` 
+FROM `contract`
+WHERE 1=1 
+	AND `contract`.`archive_code` = 'DA970' 
+	AND `contract`.`deleted_flag` = 0 
+	AND `contract`.`sign_date` >= '1990-01-01'
+;
+
+SELECT `contract`.`archive_code` 
+FROM `contract` 
+WHERE 1=1 
+	AND `contract`.`archive_code` = 'DA970' 
+	AND `contract`.`deleted_flag` = 0
+;
+
+ALTER TABLE contract ADD INDEX idx_archive_code_sign_date (archive_code, sign_date);
+
+ALTER TABLE contract ADD INDEX idx_archive_code (archive_code);
+
+
