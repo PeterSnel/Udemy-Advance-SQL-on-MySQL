@@ -1,3 +1,5 @@
+SHOW INDEX FROM table;
+
 -- ### S03-P01 ###
 CREATE INDEX idx_personal_code_2chars ON sample_staff.employee (personal_code(2));
 
