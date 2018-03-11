@@ -73,3 +73,70 @@ PARTITION BY LIST(store_id) (
 	PARTITION pWest VALUES IN (4,12,13,14,18),
 	PARTITION pCentral VALUES IN (7,8,15,16)
 );
+
+-- ##### Coding Practices ######
+-- P01
+CREATE TABLE invoice_partitioned (
+	id INT(11) unsigned auto_increment NOT NULL, 
+	employee_id INT(11) unsigned NOT NULL DEFAULT '0', 
+	department_code VARCHAR(5), 
+	invoiced_date DATE NOT NULL, 
+	paid_flag tinyint(4) NOT NULL DEFAULT '0', 
+	insert_dt datetime NOT NULL, 
+	insert_user_id INT(11) NOT NULL DEFAULT '-1', 
+	insert_process_code VARCHAR(255) DEFAULT NULL, 
+	update_dt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+	update_user_id INT(11) NOT NULL DEFAULT '-1', 
+	update_process_code VARCHAR(255) DEFAULT NULL, 
+	deleted_flag tinyint(4) NOT NULL, 
+	PRIMARY KEY (id, department_code)
+);
+
+INSERT INTO invoice_partitioned (
+	id, 
+	employee_id, 
+	department_code, 
+	invoiced_date, 
+	paid_flag, 
+	insert_dt, 
+	insert_user_id, 
+	insert_process_code, 
+	update_dt, 
+	update_user_id, 
+	update_process_code, 
+	deleted_flag
+)
+SELECT 
+	invoice.id, 
+	invoice.employee_id, 
+	department.code, 
+	invoice.invoiced_date, 
+	invoice.paid_flag, 
+	invoice.insert_dt, 
+	invoice.insert_user_id, 
+	invoice.insert_process_code, 
+	invoice.update_dt, 
+	invoice.update_user_id, 
+	invoice.update_process_code, 
+	invoice.deleted_flag 
+FROM invoice 
+
+INNER JOIN department_employee_rel ON 1=1 
+	AND invoice.employee_id = department_employee_rel.employee_id 
+	AND invoice.invoiced_date BETWEEN department_employee_rel.from_date 
+		AND IFNULL(department_employee_rel.to_date, '2002-08-01') 
+	AND department_employee_rel.deleted_flag = 0 
+INNER JOIN department ON 1=1 
+	AND department_employee_rel.department_id = department.id 
+	AND department.deleted_flag = 0 
+;
+
+SELECT 
+	id, 
+	employee_id, 
+	count(id) AS count 
+FROM department_employee_rel 
+WHERE from_date >= '1985-01-01' AND to_date <= '1987-12-01' 
+GROUP BY employee_id 
+ORDER BY count DESC 
+LIMIT 10;
