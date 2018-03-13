@@ -140,3 +140,12 @@ WHERE from_date >= '1985-01-01' AND to_date <= '1987-12-01'
 GROUP BY employee_id 
 ORDER BY count DESC 
 LIMIT 10;
+
+ALTER TABLE invoice_partitioned 
+	PARTITION BY LIST COLUMNS(department_code) ( 
+		PARTITION p0 VALUES IN ('CS', 'DEV', 'FIN'), 
+		PARTITION p1 VALUES IN ('HR', 'MKT', 'PROD'), 
+		PARTITION p2 VALUES IN ('QA', 'RES', 'SAL') 
+);
+
+SHOW CREATE TABLE invoice_partitioned\G;
