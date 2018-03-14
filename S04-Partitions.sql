@@ -149,3 +149,34 @@ ALTER TABLE invoice_partitioned
 );
 
 SHOW CREATE TABLE invoice_partitioned\G;
+
+/* Wijzigen van p0 van ('CS','DEV','FIN') naar ('CS','DEV') gooit alle rows met FIN erin weg!!!? */
+ALTER TABLE invoice_partitioned reorganize partition p0 INTO (
+    partition n0 VALUES IN ('CS','DEV') 
+);
+
+ALTER TABLE invoice_partitioned ADD PARTITION (PARTITION n9 VALUES IN ('TEMP'));
+
+-- WERKT NIET!?!?!? (Verschuiven van values.)
+ALTER TABLE invoice_partitioned reorganize partition n0,n9,p0 INTO (
+    partition n0 VALUES IN ('DEV'), 
+    partition n9 VALUES IN ('FIN','TEMP'), 
+    partition p0 VALUES IN ('CS') 
+);
+
+-- WERKT WEL! (Opnieuw opbouwen van partitions)
+ALTER TABLE invoice_partitioned PARTITION BY LIST COLUMNS (department_code) (
+    partition p0 VALUES IN ('CS'), 
+    partition p1 VALUES IN ('HR','MKT','PROD'), 
+    partition p2 VALUES IN ('QA','RES','SAL'), 
+    partition n0 VALUES IN ('DEV'), 
+    partition n9 VALUES IN ('TEMP','FIN') 
+);
+
+insert into invoice_partitioned (department_code, invoiced_date, insert_dt, deleted_flag) 
+VALUES (
+	'TEMP', 
+    '2018-03-14', 
+    '2018-03-14', 
+    0
+);
